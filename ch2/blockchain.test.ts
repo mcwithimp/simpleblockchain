@@ -22,11 +22,11 @@ test('blockchain should be superseded by another block', () => {
 test('blockchain should be superseded by another block', () => {
   blockchain.push(createNewBlock(['Eva sends 2 btc to Choi']))
 
-    const head = blockchain[blockchain.length - 1]
-    const previous = blockchain[head.header.level - 1]
+  const head = blockchain[blockchain.length - 1]
+  const previous = blockchain[head.header.level - 1]
 
-    console.log(blockchain)
-    expect(blockchain.length).toBe(3)
-    expect(calculateBlockHash(previous.header)).toBe(head.header.previousHash)
-    expect(previous.header.level).toBe(head.header.level - 1)
+  console.log(blockchain)
+  expect(blockchain.length).toBe(3)
+  expect(calculateBlockHash(previous.header)).toBe(head.header.previousHash)
+  expect(previous.header.level).toBe(head.header.level - 1)
 })

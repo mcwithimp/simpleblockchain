@@ -1,10 +1,9 @@
-// // 1. 개요
-// // 2. Block and blockchain
-// // 3. Transaction
-// // 4. Node
-// // 5. Miner
-// // 6. Client
-// // 7. P2P(extension of network)
+// // 0. 개요
+// // 1. Block and blockchain
+// // 2. Transaction
+// // 3. Node (P2P)
+// // 4. Miner (Consensus)
+// // 5. Client
 
 // const isBlockValid = (newBlock : Block, previousBlock: Block) => {
 //   if (calculateBlockHash(previousBlock.header) !== block.header.previousHash) {
@@ -46,24 +45,6 @@
 //   address: string,
 //   amount: number
 // }
-
-// interface TxIn {
-//   txOutId: string,
-//   txOutIdx: number,
-//   signature: string
-// }
-
-// interface TxOut {
-//   address: string,
-//   amount: number
-// }
-
-// interface Transaction {
-//   txIns: TxIn[],
-//   txOuts: TxOut[],
-// }
-
-// type Mempool = Transaction[]
 
 // ///////////////////////////////
 // // fixtures

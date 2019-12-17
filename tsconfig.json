@@ -11,7 +11,9 @@
     "noFallthroughCasesInSwitch": true,
     "noLib": false,
     "pretty": true,
-    "rootDir": "."
+    "rootDir": ".",
+    "esModuleInterop": true,
+    "resolveJsonModule": true
   },
   "exclude": [
     "node_modules"
