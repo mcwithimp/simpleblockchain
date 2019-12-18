@@ -5,6 +5,9 @@ import { createCoinbaseTx } from './transaction'
 import { UTxO, Context } from './types/context'
 import clonedeep from 'lodash.clonedeep'
 
+import { INITIAL_DIFFICULTY } from './constants.json'
+import { mine } from './miner'
+
 export const calculateBlockHash = (blockHeader: Block["header"]): string => sha256(JSON.stringify(blockHeader))
 export const myKey = {
   "alias": "myKeys1",
@@ -19,9 +22,11 @@ const createGenesisBlock = (): Block => {
   const header = {
     level: 0,
     previousHash: '0'.repeat(64),
-    timestamp: 1576482055,
+    timestamp: getTimestamp(),
     miner: "1LpUToTfVj6LVkwpyUnrFEXr3sNcdtRPkX", // 하드코딩
-    txsHash: sha256(JSON.stringify(transactions))
+    txsHash: sha256(JSON.stringify(transactions)),
+    nonce: 0,
+    difficulty: INITIAL_DIFFICULTY
   }
   const hash = calculateBlockHash(header)
 
@@ -59,13 +64,17 @@ export const createNewBlock = (txFromMempool: Transaction[]): Block => {
     previousHash: calculateBlockHash(head.header),
     timestamp: getTimestamp(),
     miner: myKey.pkh,
-    txsHash: sha256(JSON.stringify(transactions))
+    txsHash: sha256(JSON.stringify(transactions)),
+    nonce: 0,
+    difficulty: -1
   }
-  const hash = calculateBlockHash(header)
+  // const hash = calculateBlockHash(header)
+
+  const mined = mine(header)
 
   return {
-    hash,
-    header,
+    hash: mined.hash,
+    header: mined.header,
     transactions
   }
 }

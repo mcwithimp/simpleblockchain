@@ -7,7 +7,9 @@ export interface Block {
         previousHash: string,
         timestamp: number,
         miner: string,
-        txsHash: string
+        txsHash: string,
+        nonce: number,
+        difficulty: number
     },
     transactions: Transaction[],
 }
