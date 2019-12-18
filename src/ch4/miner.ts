@@ -3,11 +3,18 @@ import {
   DIFFICULTY_PERIOD,
 } from './constants.json'
 import { Block } from './types/block'
-import { getBlockchain, calculateBlockHash, getHead } from './blockchain'
+import { getBlockchain, calculateBlockHash, getHead, createNewBlock, pushBlock } from './blockchain'
+import { broadcastNextBlock } from './node'
 
 interface MineResult {
   hash: string,
   header: Block["header"]
+}
+
+export const initialize = () => {
+  const nextBlock = createNewBlock([])
+  pushBlock(nextBlock)
+  broadcastNextBlock(nextBlock)
 }
 
 export const difficultyConstant = 0xffff * 256 ** (0x1d - 3)
@@ -17,22 +24,22 @@ export const mine = (nextBlockHeader: Block["header"]): MineResult => {
   // should change difficulty?
   const difficulty = calculateDifficulty(nextBlockHeader)
   const target = BigInt(difficultyConstant / difficulty)
-  
+
   nextBlockHeader.difficulty = difficulty
 
   let nonce = 0;
   let blockHash: string = '';
 
-  while(true) {
+  while (true) {
     nextBlockHeader.nonce = nonce
     blockHash = calculateBlockHash(nextBlockHeader)
-    
+
     // console.log({blockHash})
     // console.log({difficulty})
     // process.stdout.write(`\r${BigInt(`0x${blockHash}`)}`)
     // console.log(new BN(blockHash))
     // console.log(new BN(target.toString()))
-    if(BigInt(`0x${blockHash}`) < target) break;
+    if (BigInt(`0x${blockHash}`) < target) break;
 
     nonce++
   }
@@ -50,6 +57,8 @@ export const mine = (nextBlockHeader: Block["header"]): MineResult => {
     header: nextBlockHeader
   }
 }
+
+
 
 const calculateDifficulty = (nextBlockHeader: Block["header"]) => {
   const { level, timestamp } = nextBlockHeader

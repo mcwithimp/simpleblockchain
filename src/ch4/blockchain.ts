@@ -89,6 +89,8 @@ export const createNewBlock = (txFromMempool: Transaction[]): Block => {
   }
   // const hash = calculateBlockHash(header)
 
+  console.log('??')
+
   const mined = mine(header)
 
   return {

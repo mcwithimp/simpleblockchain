@@ -7,9 +7,10 @@ import {
   createPeerRequestMsg,
   createSyncResponseMsg,
   createSyncRequestMsg,
-  createPeerResponseMsg
+  createPeerResponseMsg,
+  createBlockInjectedMsg
 } from './types/messages'
-import { getHead, getBlockchain, replaceChain } from './blockchain'
+import { getHead, getBlockchain, replaceChain, pushBlock, createNewBlock } from './blockchain'
 import { Block, Blockchain } from './types/block'
 
 const peers: Map<string, WebSocket> = new Map()
@@ -119,6 +120,13 @@ const messageHandlers = {
 
     //
     replaceChain(candidateChain)
+  },
+
+
+  // block injected
+  [MessageTypes.BLOCK_INJECTED]: (peer: WebSocket, block: Block) => {
+    pushBlock(block)
+    createNewBlock([])
   }
 
   // // what is your latest block?
@@ -214,3 +222,14 @@ const messageHandler = (peer: WebSocket) => {
 }
 
 const log = (msg: string) => console.log(`${process.env.port}: ${msg}`)
+
+export const broadcastNextBlock = (block: Block) => {
+  peers.forEach(peer => {
+    const blockInjectedMessage = createBlockInjectedMsg(block)
+    peer.send(blockInjectedMessage)
+  })
+
+  // const nextBlock = createNewBlock([])
+  // pushBlock(nextBlock)
+  
+}
