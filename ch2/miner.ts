@@ -47,6 +47,7 @@ const genesisKeys = {
 export const genesisCoinbaseTx = createCoinbaseTx(genesisKeys)
 console.log(genesisCoinbaseTx)
 // export const genesisCoinbaseTx = {
+//   txId: 'fdb195ee657a72bc90b5efcdf84432f4298340a4e18bd1dbb2e53cbed4de5e26',
 //   txIns: [
 //     {
 //       txOutId: '0000000000000000000000000000000000000000000000000000000000000000',
@@ -59,7 +60,7 @@ console.log(genesisCoinbaseTx)
 //       amount: 5000000000
 //     }
 //   ],
-//   signature: '3046022100aba21e2e3dd632914d54217083a61f72be08928b23c0ed54ffac74ee81fe3d2a022100f79b150793b6babe369616e31ec036ce978a89945e28375f9eda46123e63aafc'
+//   signature: '3046022100b372f4fe3d48bbaf67bf438747bb8bf184cfeb1d1a28cc9de684d48190746727022100d2bb0937cc9fac5b71bf74899ad194ee9c8deaa2a2fb1b1379902c5cb50251db'
 // }
 
 export const createNewBlock = (transactions: Transaction[]): Block => {

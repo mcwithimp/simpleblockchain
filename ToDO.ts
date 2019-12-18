@@ -5,6 +5,21 @@
 // // 4. Miner (Consensus)
 // // 5. Client
 
+// blockchain is a data structure
+// block
+// blockchain
+
+// mining in one server model
+// nonce finding
+// difficulty adjusting
+// reward : coinbaseTx
+
+// balance check 
+
+// P2P
+
+// TX
+
 // const isBlockValid = (newBlock : Block, previousBlock: Block) => {
 //   if (calculateBlockHash(previousBlock.header) !== block.header.previousHash) {
 //   }

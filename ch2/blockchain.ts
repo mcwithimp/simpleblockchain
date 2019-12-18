@@ -7,6 +7,13 @@ const { COINBASE_AMOUNT, SATOSHI } = constants
 
 export const calculateBlockHash = (blockHeader: Block["header"]): string => sha256(JSON.stringify(blockHeader))
 
+const myKey = {
+  "alias": "myKeys1",
+  "sk": "110efe13c20b8278881fc366f64e695c6880f67a37f75eabd3fea2e7f9b6f342",
+  "pk": "04f6ccb16803516a2e5c9bbf12dcea1a802e55e51c04b915142c25c2336cf7a428a1f3cae1854a722435aa7004f517ede361e9f940f54ce091fe3273a497aa6170",
+  "pkh": "1LpUToTfVj6LVkwpyUnrFEXr3sNcdtRPkX"
+}
+
 const createGenesisBlock = (): Block => {
   const transactions = [genesisCoinbaseTx]
   const header = {
@@ -25,11 +32,31 @@ const createGenesisBlock = (): Block => {
   }
 }
 
-const genesisBlock : Block = createGenesisBlock();
+const genesisBlock : Block = createGenesisBlock()
 
-export let blockchain: Blockchain = [genesisBlock];
+export let blockchain: Blockchain = [genesisBlock]
+export const getBlockchain : Blockchain = () => blockchain
 
 export const getHead = () => blockchain[blockchain.length - 1]
 
+export const createNewBlock = (transactions: Transaction[]): Block => {
+  const head = getHead()
+  const header = {
+    level: head.header.level + 1,
+    previousHash: calculateBlockHash(head.header),
+    timestamp: getTimestamp(),
+    miner: myKey.pkh,
+    txsHash: sha256(JSON.stringify(transactions))
+  }
+  const hash = calculateBlockHash(header)
 
+  return {
+    hash,
+    header,
+    transactions
+  }
+}
 
+export const pushBlock = (block: Block) => {
+  getBlockchain().push(block)
+}

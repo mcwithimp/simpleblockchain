@@ -6,6 +6,7 @@ export interface Block {
         level: number,
         previousHash: string,
         timestamp: number,
+        miner: string, 
         txsHash: string
     },
     transactions: Transaction[],
