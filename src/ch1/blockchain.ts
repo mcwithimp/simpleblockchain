@@ -1,4 +1,4 @@
-import { Block, Blockchain, Transaction } from './types/types'
+import { Block, Blockchain, Transaction } from './types/block'
 import { sha256 } from '../lib/crypto'
 
 export const calculateBlockHash = (blockHeader: Block["header"]): string => sha256(JSON.stringify(blockHeader))
