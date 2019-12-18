@@ -3,7 +3,8 @@ import { Transaction } from './types/transaction'
 import { sha256 } from '../lib/crypto'
 import { createCoinbaseTx } from './transaction'
 import { UTxO, Context } from './types/context'
-import clonedeep from 'lodash.clonedeep'
+import cloneDeep from 'lodash.clonedeep'
+import isEqual from 'lodash.isequal'
 
 import { INITIAL_DIFFICULTY } from './constants.json'
 import { mine, difficultyConstant } from './miner'
@@ -40,7 +41,7 @@ const createGenesisBlock = (): Block => {
 
 let blockchain: Blockchain = []
 const context: Context = []
-export const getHeadContext = () => clonedeep(context[context.length - 1])
+export const getHeadContext = () => cloneDeep(context[context.length - 1])
 
 // We need to compute 2**256 / (bnTarget+1)
 const nChainWork: bigint[] = [] // accumulated difficulties for every block
@@ -56,6 +57,15 @@ export const getBlockchain = () => blockchain
 export const getHead = () => blockchain[blockchain.length - 1]
 export const replaceChain = (candidateChain: Blockchain) => {
   const lb = candidateChain[0].header.level
+  const localGenesisBlock = createGenesisBlock()
+  const isGenesisValid = isEqual(localGenesisBlock, candidateChain[0])
+
+  // if candidateChain includes the genesis block, verify it 
+  if (lb === 0 && isGenesisValid === false) {
+    console.log('The remote genesis block is invalid!')
+    return    
+  }
+
   const localChain = getBlockchain()
   blockchain = localChain.slice(0, lb).concat(candidateChain)
 }
@@ -90,38 +100,6 @@ export const createNewBlock = (txFromMempool: Transaction[]): Block => {
 
 export const pushBlock = (block: Block) => {
   getBlockchain().push(block)
-}
-
-export const syncBlockchain = (candidateChain: Blockchain) => {
-  const localHead = getHead()
-  const candidateStart = candidateChain[0]
-  const candidateHead = candidateChain[candidateChain.length - 1]
-
-  // if candidateChain is continuing after the local chain
-  if (localHead.hash === candidateStart.header.previousHash) {
-    candidateChain.forEach(candidateBlock => pushBlock(candidateBlock))
-  }
-
-  // if there is an overlap 
-  else {
-    // this could be -1 
-    const diff = localHead.header.level - candidateStart.header.level
-    const diffStart = candidateChain[diff + 1]
-
-    // if candidate[distance-1] is the same as local head,
-    // it is a continuous chain, so start validating from the diff
-    if(localHead.hash === diffStart.header.previousHash) {
-      candidateChain
-        .slice(diff + 1)
-        .forEach(candidateBlock => pushBlock(candidateBlock))
-    }
-
-    // it might be an alternate chain,
-    // do a full validation
-    else {
-
-    }
-  }
 }
 
 // update utxo set
