@@ -1,0 +1,12 @@
+{
+  "BLOCK_REWARD": 50,
+  "BLOCK_INTERVAL": 1,
+  "INITIAL_DIFFICULTY": 0.000035,
+  "DIFFICULTY_PERIOD": 10,
+  "FINALITY_THRESHOLD": 30,
+  "BOOTSTRAP_PEERS": [
+    "localhost:9732",
+    "localhost:9733",
+    "localhost:9734"
+  ]
+}
