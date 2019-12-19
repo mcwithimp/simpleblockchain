@@ -61,30 +61,30 @@ export const replaceChain = (candidateChain: Blockchain) => {
   candidateChain.forEach(block => processBlock(block))
 }
 
-export const createNewBlock = (txFromMempool: Transaction[]): Block => {
-  // ...
-  const head = getHead()
-  const coinbaseTx = createCoinbaseTx(head.header.level + 1)
-  const transactions = [coinbaseTx, ...txFromMempool]
+// export const createNewBlock = (txFromMempool: Transaction[]): Block => {
+//   // ...
+//   const head = getHead()
+//   const coinbaseTx = createCoinbaseTx(head.header.level + 1)
+//   const transactions = [coinbaseTx, ...txFromMempool]
 
-  const header = {
-    level: head.header.level + 1,
-    previousHash: head.hash,
-    timestamp: getTimestamp(),
-    miner: myKey.pkh,
-    txsHash: getHash(transactions),
-    nonce: 0,
-    difficulty: -1
-  }
+//   const header = {
+//     level: head.header.level + 1,
+//     previousHash: head.hash,
+//     timestamp: getTimestamp(),
+//     miner: myKey.pkh,
+//     txsHash: getHash(transactions),
+//     nonce: 0,
+//     difficulty: -1
+//   }
 
-  const mined = mine(header)
+//   const mined = mine(header)
 
-  return {
-    hash: mined.hash,
-    header: mined.header,
-    transactions
-  }
-}
+//   return {
+//     hash: mined.hash,
+//     header: mined.header,
+//     transactions
+//   }
+// }
 
 export const processBlock = (block: Block) => {
   pushBlock(block)
@@ -111,12 +111,12 @@ export const updateContext = (block: Block) => {
         address: txOut.address,
         amount: txOut.amount
       }
-      utxoSet[`tx.txId_${_idx}`] = utxo
+      utxoSet[`${tx.txId}_${_idx}`] = utxo
     })
 
     // delete spent txOuts
     tx.txIns.forEach(txIn => {
-      delete utxoSet[`txIn.txOutId_${txIn.txOutIdx}`]
+      delete utxoSet[`${txIn.txOutId}_${txIn.txOutIdx}`]
     })
   })
 

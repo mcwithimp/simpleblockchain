@@ -3,7 +3,7 @@ import {
   DIFFICULTY_PERIOD,
 } from './constants.json'
 import { Block } from './types/block'
-import { getBlockchain, getHash, getHead, pushBlock, getTimestamp, myKey } from './blockchain'
+import { getBlockchain, getHash, getHead, pushBlock, getTimestamp, myKey, processBlock } from './blockchain'
 import { broadcastNextBlock } from './node'
 import { createCoinbaseTx } from './transaction'
 import { sha256 } from '../lib/crypto'
@@ -13,7 +13,7 @@ import { log } from '../lib/log'
 export const difficultyConstant = 0xffff * 256 ** (0x1d - 3)
 
 const miningContext = {
-  intervalContext: null
+  intervalContext: null // timer
 }
 
 export const getTxFromMempool: () => Transaction[] = () => []
@@ -29,35 +29,33 @@ export const initialize = () => {
 export const requestMine = async (
   txFromMempool: Transaction[]
 ) => {
-
   const head = getHead()
   const coinbaseTx = createCoinbaseTx(head.header.level + 1)
   const transactions = [coinbaseTx, ...txFromMempool]
 
   const nextBlockHeader = {
     level: head.header.level + 1,
-    previousHash: getHash(head.header),
+    previousHash: head.hash,
     timestamp: getTimestamp(),
     miner: myKey.pkh,
-    txsHash: sha256(JSON.stringify(transactions)),
+    txsHash: getHash(transactions),
     nonce: 0,
-    difficulty: -1
+    difficulty: -1 // placeholder
   }
 
   log(`[miner] request new mining session for level ${nextBlockHeader.level}`)
 
   const difficulty = nextBlockHeader.difficulty = calculateDifficulty(nextBlockHeader)
+  const target = BigInt(difficultyConstant / difficulty)
 
   // stop previous mining loop
   clearInterval(miningContext.intervalContext)
 
   // start a new mining loop
   miningContext.intervalContext = setInterval(() => {
-
     // up nonce
     nextBlockHeader.nonce++
 
-    const target = BigInt(difficultyConstant / difficulty)
     const mined = mine(nextBlockHeader, target)
 
     // if answer is not found, do nothing
@@ -67,10 +65,10 @@ export const requestMine = async (
     const { hash, header } = mined
     const nextBlock = { hash, header, transactions }
 
-    pushBlock(nextBlock)
+    processBlock(nextBlock)
     broadcastNextBlock(nextBlock)
 
-    // another loop
+    // another loop.. tail call
     requestMine(getTxFromMempool())
   }, 0)
 }

@@ -5,6 +5,17 @@ export interface Message {
   body: string // json string
 }
 
+export const MessageTypeNames = [
+  'PEER_REQUEST',
+  'PEER_RESPONSE',
+  'SYNC_REQUEST',
+  'SYNC_RESPONSE',
+  'BLOCK_INJECTED',
+  'TRANSACTION_INJECTED',
+  'MEMPOOL_REQUEST',
+  'MEMPOOL_RESPONSE'
+]
+
 export enum MessageTypes {
   // peer discovery & management
   PEER_REQUEST,
