@@ -5,6 +5,7 @@ import { transfer } from './transaction'
 import { pushToMempool } from './blockchain'
 import { log } from '../lib/log'
 import { broadcastTransaction } from './node'
+import { verifyAddress } from '../lib/crypto'
 
 export const initialize = (port: number) => {
   const app = express()
@@ -13,6 +14,16 @@ export const initialize = (port: number) => {
   app.post('/tx', (req, res) => {
     const body: TransactionInput = req.body
     const { from, to, amount } = body
+
+    if (verifyAddress(from) == false) {
+      console.log('Source address is not valid!')
+      return
+    }
+
+    if (verifyAddress(to) == false) {
+      console.log('Destination address is not valid!')
+      return
+    }
 
     const transaction = transfer(from, to, amount)
     pushToMempool(transaction)

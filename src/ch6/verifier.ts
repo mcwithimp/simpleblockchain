@@ -1,9 +1,11 @@
 import { BLOCK_INTERVAL } from './constants.json'
-import { getHead, getBlockchain } from './blockchain'
+import { getHead, getBlockchain, getHeadContext } from './blockchain'
 import { Blockchain, Block } from './types/block'
 import isEqual from 'lodash.isequal'
-import { sha256 } from '../lib/crypto'
+import { sha256, verifySign } from '../lib/crypto'
 import { difficultyConstant } from './miner'
+import { Transaction, TxIn } from './types/transaction'
+import { UTxOSet } from './types/context.js'
 
 export const getHash = (data: object): string => sha256(JSON.stringify(data))
 export const getTimestamp = () => Math.floor(new Date().getTime() / 1000)
@@ -90,6 +92,48 @@ export const verifyChain = (candidateChain: Blockchain) : boolean => {
   })
 
   return isChainValid
+}
+
+export const verifyTxIns = (
+  txIns: TxIn[], 
+  headContext: UTxOSet, 
+  txId: string, 
+  signature: string): boolean => {
+
+  const isTxInsValid = txIns.every(txIn => {
+    const target = `${txIn.txOutId}_${txIn.txOutIdx}`
+    const isUnspent = headContext.hasOwnProperty(target)
+
+    if (isUnspent === false) {
+      console.log("Claimed utxo doesn't exist!")
+      return false
+    }
+
+    const address = headContext[target].address
+    if (verifySign(txId, signature, address) === false) {
+      console.log("Tx's signature is not valid!")
+      return false
+    }
+
+    return true
+  })
+
+  return isTxInsValid
+}
+
+export const verifyTx = (tx: Transaction) : boolean => {
+  const headContext = getHeadContext()
+  const { txId, txIns, txOuts, signature } = tx
+
+  if (getHash({txIns, txOuts}) !== txId) {
+    console.log("TxId is not valid!")
+    return false
+  } else if (verifyTxIns(txIns, headContext, txId, signature) === false) {
+    console.log("Claim of txIns is not valid!")
+    return false
+  }
+
+  return true
 }
 
 
