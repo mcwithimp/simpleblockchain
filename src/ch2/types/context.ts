@@ -6,7 +6,7 @@ export interface UTxO {
 }
 
 export type UTxOSet = {
-  [key: string]: UTxO[]
+  [key: string]: UTxO
 }
 
 export type Context = UTxOSet[]
