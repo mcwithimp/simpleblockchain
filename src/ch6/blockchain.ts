@@ -1,5 +1,5 @@
 import { Block, Blockchain } from './types/block'
-import { Transaction } from './types/transaction'
+import { Transaction, Mempool } from './types/transaction'
 import { sha256 } from '../lib/crypto'
 import { createCoinbaseTx } from './transaction'
 import { UTxO, Context } from './types/context'
@@ -39,8 +39,14 @@ const createGenesisBlock = (genesisTimestamp: number): Block => {
 
 
 let blockchain: Blockchain = []
-const context: Context = []
+let context: Context = []
+let mempool: Mempool = []
+
+export const getBlockchain = () => blockchain
+export const getHead = () => blockchain[blockchain.length - 1]
+export const getContext = () => context
 export const getHeadContext = () => cloneDeep(context[context.length - 1])
+export const getMempool = () => cloneDeep(mempool)
 
 // We need to compute 2**256 / (bnTarget+1)
 const nChainWork: bigint[] = [] // accumulated difficulties for every block
@@ -52,12 +58,15 @@ export const initialize = (genesisTimestamp: number) => {
   updateContext(genesisBlock)
 }
 
-export const getBlockchain = () => blockchain
-export const getHead = () => blockchain[blockchain.length - 1]
+
 export const replaceChain = (candidateChain: Blockchain) => {
   const lb = candidateChain[0].header.level
   const localChain = getBlockchain()
+  const localContext = getContext()
+  
+  // for replacement, drop everything and do jobs again
   blockchain = localChain.slice(0, lb)
+  context = localContext.slice(0, lb)
   candidateChain.forEach(block => processBlock(block))
 }
 

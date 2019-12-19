@@ -20,3 +20,5 @@ export interface TransactionInput {
   to: string,
   amount: number
 }
+
+export type Mempool = Transaction[]
