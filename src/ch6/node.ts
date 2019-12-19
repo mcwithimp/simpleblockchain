@@ -9,14 +9,16 @@ import {
   createPeerResponseMsg,
   createBlockInjectedMsg,
   Message,
-  createTxInjectedMsg
+  createTxInjectedMsg,
+  createMempoolResponseMsg,
+  createMempoolRequestMsg
 } from './types/messages'
 import { getHead, getBlockchain, replaceChain, pushBlock, pushToMempool, flushMempool } from './blockchain'
 import { Block, Blockchain } from './types/block'
 import { verifyChain } from './verifier'
 import { getTxFromMempool, requestMine, pauseMine } from './miner'
 import { MessageTypeNames } from './types/messages'
-import { Transaction } from './types/transaction'
+import { Transaction, Mempool } from './types/transaction'
 
 // debug
 const _send = WebSocket.prototype.send
@@ -88,6 +90,10 @@ const connectToPeer = async (peerAddress: string) => {
     // send my peer list
     const peerRequestMsg = createPeerRequestMsg('localhost', +process.env.port)
     peerConnection.send(peerRequestMsg)
+
+    // send mempool request message
+    const mempoolRequestMsg = createMempoolRequestMsg()
+    peerConnection.send(mempoolRequestMsg)
 
     // assign message handler
     messageHandler(peerConnection)
@@ -181,6 +187,16 @@ const messageHandlers = {
   [MessageTypes.TRANSACTION_INJECTED]: (peer: WebSocket, tx: Transaction) => {
     // TODO: validate
     pushToMempool(tx)
+  },
+
+  // send me your mempoolz
+  [MessageTypes.MEMPOOL_REQUEST]: (peer: WebSocket) => {
+    const mempoolResponse = createMempoolResponseMsg(getTxFromMempool())
+    peer.send(mempoolResponse)
+  },
+
+  [MessageTypes.MEMPOOL_RESPONSE]: (peer: WebSocket, mempool: Mempool) => {
+    mempool.forEach(tx => pushToMempool(tx))
   }
 
   // // what is your latest block?
@@ -280,7 +296,7 @@ const messageHandler = (peer: WebSocket) => {
     const parsed = JSON.parse(data)
     const { type, body } = parsed
 
-    log(`[incoming] ${type}`)
+    log(`[incoming] ${MessageTypeNames[type]}`)
 
     messageHandlers[type](peer, body)
   })

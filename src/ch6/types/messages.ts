@@ -1,5 +1,5 @@
 import { Block, Blockchain } from "./block"
-import { Transaction } from "./transaction"
+import { Transaction, Mempool } from "./transaction"
 
 export interface Message {
   type: MessageTypes,
@@ -58,7 +58,9 @@ export const createSyncRequestMsg = (remoteHeader: Block["header"]) => JSON.stri
   body: remoteHeader
 })
 
-export const createSyncResponseMsg = (blockchain: Blockchain | null) => JSON.stringify({
+export const createSyncResponseMsg = (
+  blockchain: Blockchain | null
+) => JSON.stringify({
   type: MessageTypes.SYNC_RESPONSE,
   body: blockchain
 })
@@ -82,4 +84,15 @@ export const createBlockInjectedMsg = (block: Block) => JSON.stringify({
 export const createTxInjectedMsg = (tx: Transaction) => JSON.stringify({
   type: MessageTypes.TRANSACTION_INJECTED,
   body: tx
+})
+
+
+export const createMempoolRequestMsg = () => JSON.stringify({
+  type: MessageTypes.MEMPOOL_REQUEST,
+  body: null
+})
+
+export const createMempoolResponseMsg = (mempool: Mempool) => JSON.stringify({
+  type: MessageTypes.MEMPOOL_RESPONSE,
+  body: mempool
 })
