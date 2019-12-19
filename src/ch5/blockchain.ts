@@ -104,7 +104,7 @@ export const updateContext = (block: Block) => {
 
   transactions.forEach(tx => {
     // add new txOuts
-    const utxos = tx.txOuts.forEach((txOut, _idx) => {
+    tx.txOuts.forEach((txOut, _idx) => {
       const utxo = {
         txOutId: tx.txId,
         txOutIdx: _idx,
