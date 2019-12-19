@@ -13,7 +13,7 @@ import {
 import { getHead, getBlockchain, replaceChain, pushBlock } from './blockchain'
 import { Block, Blockchain } from './types/block'
 import { verifyChain } from './verifier'
-import { getTxFromMempool, requestMine } from './miner'
+import { getTxFromMempool, requestMine, pauseMine } from './miner'
 import { MessageTypeNames } from './types/messages'
 
 // debug
@@ -158,6 +158,7 @@ const messageHandlers = {
     if(block.header.level > localHead.header.level + 1) {
       const syncRequestMsg = createSyncRequestMsg(localHead.header)
       peer.send(syncRequestMsg)
+      pauseMine()
     }
 
     // do nothing if remote head is lower than mine
