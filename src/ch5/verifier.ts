@@ -4,7 +4,7 @@ import { Blockchain, Block } from './types/block.js'
 import isEqual from 'lodash.isequal'
 import { sha256 } from '../lib/crypto.js'
 
-export const calculateBlockHash = (blockHeader: Block["header"]): string => sha256(JSON.stringify(blockHeader))
+export const getHash = (data: object): string => sha256(JSON.stringify(data))
 export const getTimestamp = () => Math.floor(new Date().getTime() / 1000)
 
 
@@ -35,9 +35,9 @@ export const verifyBlock = (block: Block) : boolean => {
 
   const { hash, header, transactions } = block
 
+  sha256()
 
-
-
+  
 
 
   return true

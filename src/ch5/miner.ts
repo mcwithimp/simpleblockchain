@@ -5,6 +5,7 @@ import {
 import { Block } from './types/block'
 import { getBlockchain, getHead, createNewBlock, pushBlock } from './blockchain'
 import { broadcastNextBlock } from './node'
+import { getHash } from './verifier.js'
 
 interface MineResult {
   hash: string,
@@ -32,7 +33,7 @@ export const mine = (nextBlockHeader: Block["header"]): MineResult => {
 
   while (true) {
     nextBlockHeader.nonce = nonce
-    blockHash = calculateBlockHash(nextBlockHeader)
+    blockHash = getHash(nextBlockHeader)
 
     // console.log({blockHash})
     // console.log({difficulty})

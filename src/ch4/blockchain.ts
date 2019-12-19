@@ -9,7 +9,8 @@ import isEqual from 'lodash.isequal'
 import { INITIAL_DIFFICULTY } from './constants.json'
 import { mine, difficultyConstant } from './miner'
 
-export const calculateBlockHash = (blockHeader: Block["header"]): string => sha256(JSON.stringify(blockHeader))
+export const getHash = (data: object): string => sha256(JSON.stringify(data))
+
 export const myKey = {
   "alias": "myKeys1",
   "sk": "110efe13c20b8278881fc366f64e695c6880f67a37f75eabd3fea2e7f9b6f342",
@@ -25,11 +26,11 @@ const createGenesisBlock = (): Block => {
     previousHash: '0'.repeat(64),
     timestamp: getTimestamp(),
     miner: "1LpUToTfVj6LVkwpyUnrFEXr3sNcdtRPkX", // 하드코딩
-    txsHash: sha256(JSON.stringify(transactions)),
+    txsHash: getHash(transactions),
     nonce: 0,
     difficulty: INITIAL_DIFFICULTY
   }
-  const hash = calculateBlockHash(header)
+  const hash = getHash(header)
 
   return {
     hash,
@@ -80,10 +81,10 @@ export const createNewBlock = (txFromMempool: Transaction[]): Block => {
 
   const header = {
     level: head.header.level + 1,
-    previousHash: calculateBlockHash(head.header),
+    previousHash: head.hash,
     timestamp: getTimestamp(),
     miner: myKey.pkh,
-    txsHash: sha256(JSON.stringify(transactions)),
+    txsHash: getHash(transactions),
     nonce: 0,
     difficulty: -1
   }

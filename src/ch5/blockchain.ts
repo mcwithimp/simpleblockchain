@@ -7,7 +7,7 @@ import cloneDeep from 'lodash.clonedeep'
 
 import { INITIAL_DIFFICULTY } from './constants.json'
 import { mine, difficultyConstant } from './miner'
-import { getTimestamp, calculateBlockHash } from './verifier'
+import { getTimestamp, getHash } from './verifier'
 
 export const myKey = {
   "alias": "myKeys1",
@@ -24,11 +24,11 @@ const createGenesisBlock = (): Block => {
     previousHash: '0'.repeat(64),
     timestamp: getTimestamp(),
     miner: "1LpUToTfVj6LVkwpyUnrFEXr3sNcdtRPkX", // 하드코딩
-    txsHash: sha256(JSON.stringify(transactions)),
+    txsHash: getHash(transactions),
     nonce: 0,
     difficulty: INITIAL_DIFFICULTY
   }
-  const hash = calculateBlockHash(header)
+  const hash = getHash(header)
 
   return {
     hash,
@@ -72,7 +72,7 @@ export const createNewBlock = (txFromMempool: Transaction[]): Block => {
     previousHash: head.hash,
     timestamp: getTimestamp(),
     miner: myKey.pkh,
-    txsHash: sha256(JSON.stringify(transactions)),
+    txsHash: getHash(transactions),
     nonce: 0,
     difficulty: -1
   }

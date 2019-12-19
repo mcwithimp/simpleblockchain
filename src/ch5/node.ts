@@ -120,8 +120,11 @@ const messageHandlers = {
     if (candidateChain === null) return
 
     // verify chain
-    if (verifyChain(candidateChain)) 
-
+    if (verifyChain(candidateChain) == false) {
+      console.log("The candidate chian is not valid")
+      return
+    } 
+    
     replaceChain(candidateChain)
   },
 
