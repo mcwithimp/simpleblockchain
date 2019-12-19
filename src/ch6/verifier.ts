@@ -68,7 +68,10 @@ export const verifyChain = (candidateChain: Blockchain) : boolean => {
 
   // now we can replace the part or all of localChain with candidateChain
   // copy and merge the chain
-  const merged = [localChain[lb.header.level - 1]].concat(candidateChain)
+  const merged = lb.header.level === 0
+    ? candidateChain
+    : [localChain[lb.header.level - 1]].concat(candidateChain)
+
 
   // check level, timestamp, previousHash and block itself 
   const isChainValid = merged.slice(1).every((block, _idx) => {
