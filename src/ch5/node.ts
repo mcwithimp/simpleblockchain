@@ -245,7 +245,7 @@ const messageHandler = (peer: WebSocket) => {
     const parsed = JSON.parse(data)
     const { type, body } = parsed
 
-    log(`[incoming] ${type}, ${JSON.stringify(body, null, 2)}`)
+    log(`[incoming] ${type}`)
 
     messageHandlers[type](peer, body)
   })

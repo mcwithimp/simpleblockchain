@@ -22,7 +22,7 @@ const createGenesisBlock = (genesisTimestamp: number): Block => {
   const header = {
     level: 0,
     previousHash: '0'.repeat(64),
-    timestamp: getTimestamp(),
+    timestamp: genesisTimestamp,
     miner: "1LpUToTfVj6LVkwpyUnrFEXr3sNcdtRPkX", // 하드코딩
     txsHash: getHash(transactions),
     nonce: 0,
