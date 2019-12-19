@@ -1,5 +1,5 @@
 import { BLOCK_INTERVAL } from './constants.json'
-import { getHead, getBlockchain, getHeadContext } from './blockchain'
+import { getHead, getBlockchain, getHeadContext, getMempool } from './blockchain'
 import { Blockchain, Block } from './types/block'
 import isEqual from 'lodash.isequal'
 import { sha256, verifySign } from '../lib/crypto'
@@ -121,15 +121,54 @@ export const verifyTxIns = (
   return isTxInsValid
 }
 
+const isTxInDoubledClaimed = (candidateTx: Transaction): boolean => {
+  const mempool = getMempool()
+
+  for(const txInMempool of mempool) {
+    for(const txIn of txInMempool.txIns) {
+      const isDuplicated = candidateTx.txIns.find(candidateTxIn => {
+        return (
+          candidateTxIn.txOutId === txIn.txOutId &&
+          candidateTxIn.txOutIdx === txIn.txOutIdx 
+        )
+      })
+
+      if (isDuplicated) return true
+    }
+  }
+
+  return false
+}
+
 export const verifyTx = (tx: Transaction) : boolean => {
   const headContext = getHeadContext()
   const { txId, txIns, txOuts, signature } = tx
+
+  if (isTxInDoubledClaimed(tx) === true) {
+    console.log("One of TxIns is doubly claimed!")
+    return false
+  }
 
   if (getHash({txIns, txOuts}) !== txId) {
     console.log("TxId is not valid!")
     return false
   } else if (verifyTxIns(txIns, headContext, txId, signature) === false) {
     console.log("Claim of txIns is not valid!")
+    return false
+  }
+
+  const txInsAmount = tx.txIns
+    .map(txIn => headContext[`${txIn.txOutId}_${txIn.txOutIdx}`].amount)
+    .reduce((sum, amount) => sum + amount, 0)
+
+  const txOutsAmount = tx.txOuts.reduce(
+    (sum, txOut) => sum + txOut.amount,
+    0
+  )
+  
+  
+  if (txInsAmount !== txOutsAmount) {
+    console.log("TxIns' amount is different with TxOuts' amount!")
     return false
   }
 

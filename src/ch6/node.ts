@@ -15,7 +15,7 @@ import {
 } from './types/messages'
 import { getHead, getBlockchain, replaceChain, pushBlock, pushToMempool, flushMempool, processBlock, updateMempool } from './blockchain'
 import { Block, Blockchain } from './types/block'
-import { verifyChain } from './verifier'
+import { verifyChain, verifyTx } from './verifier'
 import { getTxFromMempool, requestMine, pauseMine } from './miner'
 import { MessageTypeNames } from './types/messages'
 import { Transaction, Mempool } from './types/transaction'
@@ -185,7 +185,10 @@ const messageHandlers = {
   },
 
   [MessageTypes.TRANSACTION_INJECTED]: (peer: WebSocket, tx: Transaction) => {
-    // TODO: validate
+    if(verifyTx(tx) === false) {
+      console.log("The injected tx is not valid!") // just ignore it
+      return
+    }
     pushToMempool(tx)
   },
 

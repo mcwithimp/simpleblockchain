@@ -75,31 +75,6 @@ export const replaceChain = (candidateChain: Blockchain) => {
   candidateChain.forEach(block => processBlock(block))
 }
 
-// export const createNewBlock = (txFromMempool: Transaction[]): Block => {
-//   // ...
-//   const head = getHead()
-//   const coinbaseTx = createCoinbaseTx(head.header.level + 1)
-//   const transactions = [coinbaseTx, ...txFromMempool]
-
-//   const header = {
-//     level: head.header.level + 1,
-//     previousHash: head.hash,
-//     timestamp: getTimestamp(),
-//     miner: myKey.pkh,
-//     txsHash: getHash(transactions),
-//     nonce: 0,
-//     difficulty: -1
-//   }
-
-//   const mined = mine(header)
-
-//   return {
-//     hash: mined.hash,
-//     header: mined.header,
-//     transactions
-//   }
-// }
-
 export const processBlock = (block: Block) => {
   pushBlock(block)
   block.transactions.forEach(tx => updateMempool(tx))
