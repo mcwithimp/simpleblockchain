@@ -3,20 +3,25 @@ import { initialize as initializeNode } from './node'
 import { initialize as initializeMiner } from './miner'
 import cluster from 'cluster'
 
-const genesisTimestamp = 1576740013
+const genesisTimestamp = 1576742400
+const port = +process.env.port
 
-if(cluster.isMaster) {
-  initializeBlockchain(genesisTimestamp)
-  initializeNode(9732)
-  initializeMiner()
+initializeBlockchain(genesisTimestamp)
+initializeNode(port)
+initializeMiner()
 
-  setTimeout(() => {
-    for(let i=0; i<3; i++) cluster.fork()
-  }, 5000)
-}
+// if(cluster.isMaster) {
+//   initializeBlockchain(genesisTimestamp)
+//   initializeNode(9732)
+//   initializeMiner()
 
-else {
-  initializeBlockchain(genesisTimestamp)
-  initializeNode(cluster.worker.id + 9733)
-  initializeMiner()
-}
+//   setTimeout(() => {
+//     for(let i=0; i<3; i++) cluster.fork()
+//   }, 5000)
+// }
+
+// else {
+//   initializeBlockchain(genesisTimestamp)
+//   initializeNode(cluster.worker.id + 9733)
+//   initializeMiner()
+// }

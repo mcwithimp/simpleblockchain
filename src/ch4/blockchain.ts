@@ -74,32 +74,8 @@ export const processBlock = (block: Block) => {
 
 export const getTimestamp = () => parseInt((new Date().getTime() / 1000).toString())
 
-// export const createNewBlock = (txFromMempool: Transaction[]): Block => {
-//   // ...
-//   const head = getHead()
-//   const coinbaseTx = createCoinbaseTx(head.header.level + 1)
-//   const transactions = [coinbaseTx, ...txFromMempool]
-
-//   const header = {
-//     level: head.header.level + 1,
-//     previousHash: calculateBlockHash(head.header),
-//     timestamp: getTimestamp(),
-//     miner: myKey.pkh,
-//     txsHash: sha256(JSON.stringify(transactions)),
-//     nonce: 0,
-//     difficulty: -1
-//   }
-
-//   const mined = mine(header)
-
-//   return {
-//     hash: mined.hash,
-//     header: mined.header,
-//     transactions
-//   }
-// }
-
 export const pushBlock = (block: Block) => {
+  log(`[blockchain] !! block pushed, ${block.header.level}`)
   getBlockchain().push(block)
 }
 

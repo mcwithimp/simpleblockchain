@@ -29,6 +29,7 @@ export const initialize = () => {
 export const requestMine = async (
   txFromMempool: Transaction[]
 ) => {
+
   const head = getHead()
   const coinbaseTx = createCoinbaseTx(head.header.level + 1)
   const transactions = [coinbaseTx, ...txFromMempool]
@@ -42,6 +43,8 @@ export const requestMine = async (
     nonce: 0,
     difficulty: -1
   }
+
+  log(`[miner] request new mining session for level ${nextBlockHeader.level}`)
 
   const difficulty = nextBlockHeader.difficulty = calculateDifficulty(nextBlockHeader)
 
@@ -70,6 +73,11 @@ export const requestMine = async (
     // another loop
     requestMine(getTxFromMempool())
   }, 0)
+}
+
+export const pauseMine = () => {
+  log('[miner] -- mining paused for sync')
+  clearInterval(miningContext.intervalContext)
 }
 
 

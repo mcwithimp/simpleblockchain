@@ -15,7 +15,7 @@ import {
 import { getHead, getBlockchain, replaceChain, pushBlock } from './blockchain'
 import { Block, Blockchain } from './types/block'
 import { log } from '../lib/log'
-import { requestMine, getTxFromMempool } from './miner'
+import { requestMine, getTxFromMempool, pauseMine } from './miner'
 
 
 // debug
@@ -144,13 +144,33 @@ const messageHandlers = {
 
     //
     replaceChain(candidateChain)
+    requestMine(getTxFromMempool())
   },
 
 
   // block injected
   [MessageTypes.BLOCK_INJECTED]: (peer: WebSocket, block: Block) => {
-    pushBlock(block)
-    requestMine(getTxFromMempool())
+    const localHead = getHead()
+
+    // do nothing if my block is higher
+    if(localHead.header.level >= block.header.level) {
+      return
+    }
+
+    // if block level is close enough (-1), request
+    if(block.header.level === localHead.header.level + 1) {
+      log(`[node] received block(${block.header.level}) is my next block, push`)
+      pushBlock(block)
+      requestMine(getTxFromMempool())
+    }
+
+    // if not, request blocks
+    else {
+      log(`[node] !! my chain is WAY behind, request chain sync`)
+      const syncRequestMessage = createSyncRequestMsg(localHead.header)
+      peer.send(syncRequestMessage)
+      pauseMine()
+    }
   }
 
   // // what is your latest block?
