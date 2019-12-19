@@ -14,3 +14,5 @@ export interface Transaction {
   txOuts: TxOut[],
   signature: string
 }
+
+export type Mempool = Transaction[]
