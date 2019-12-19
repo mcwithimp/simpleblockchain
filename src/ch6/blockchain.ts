@@ -49,6 +49,9 @@ export const getHeadContext = () => cloneDeep(context[context.length - 1])
 export const getMempool = () => cloneDeep(mempool)
 export const flushMempool = () => { mempool = [] }
 export const pushToMempool = (transaction: Transaction) => mempool.push(transaction)
+export const removeFromMempool = (txToRemove: Transaction) => {
+  mempool = mempool.filter(tx => tx === txToRemove)
+}
 
 // We need to compute 2**256 / (bnTarget+1)
 const nChainWork: bigint[] = [] // accumulated difficulties for every block
@@ -99,6 +102,7 @@ export const replaceChain = (candidateChain: Blockchain) => {
 
 export const processBlock = (block: Block) => {
   pushBlock(block)
+  block.transactions.forEach(tx => updateMempool(tx))
   updateContext(block)
 }
 
@@ -143,3 +147,19 @@ export const updateContext = (block: Block) => {
   nChainWork[block.header.level] = prevNChainWork + BigInt(2 ** 256) / (target + BigInt(1))
 }
 
+export const updateMempool = (processedTransaction: Transaction) => {
+  const mempool = getMempool()
+
+  mempool.forEach(tx => {
+    for(const txIn of tx.txIns) {
+      const duplicate = processedTransaction.txIns.find(processedTxIn => {
+        return processedTxIn.txOutId === txIn.txOutId && processedTxIn.txOutIdx === txIn.txOutIdx
+      })
+
+      if (duplicate) {
+        removeFromMempool(tx)
+        break;
+      }
+    }
+  })
+}

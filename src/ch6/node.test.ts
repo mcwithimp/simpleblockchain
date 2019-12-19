@@ -3,7 +3,7 @@ import { initialize as initializeNode } from './node'
 import { initialize as initializeMiner } from './miner'
 import { initialize as initializeRPC } from './rpc'
 
-const genesisTimestamp = 1576767853
+const genesisTimestamp = 1576773014
 const port = +process.env.port
 
 initializeBlockchain(genesisTimestamp)
