@@ -13,7 +13,7 @@ import {
   createMempoolResponseMsg,
   createMempoolRequestMsg
 } from './types/messages'
-import { getHead, getBlockchain, replaceChain, pushBlock, pushToMempool, flushMempool } from './blockchain'
+import { getHead, getBlockchain, replaceChain, pushBlock, pushToMempool, flushMempool, processBlock, updateMempool } from './blockchain'
 import { Block, Blockchain } from './types/block'
 import { verifyChain } from './verifier'
 import { getTxFromMempool, requestMine, pauseMine } from './miner'
@@ -180,7 +180,7 @@ const messageHandlers = {
       return
     } 
 
-    pushBlock(block)
+    processBlock(block)
     requestMine(getTxFromMempool())
   },
 
