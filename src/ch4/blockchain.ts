@@ -7,7 +7,7 @@ import cloneDeep from 'lodash.clonedeep'
 import isEqual from 'lodash.isequal'
 
 import { INITIAL_DIFFICULTY } from './constants.json'
-import { mine, difficultyConstant } from './miner'
+import { difficultyConstant } from './miner'
 
 export const calculateBlockHash = (blockHeader: Block["header"]): string => sha256(JSON.stringify(blockHeader))
 export const myKey = {
@@ -17,14 +17,14 @@ export const myKey = {
   "pkh": "1LpUToTfVj6LVkwpyUnrFEXr3sNcdtRPkX"
 }
 
-const createGenesisBlock = (): Block => {
+const createGenesisBlock = (genesisTimestamp: number): Block => {
   const genesisCoinbase = createCoinbaseTx(0)
   const transactions = [genesisCoinbase]
   const header = {
     level: 0,
     previousHash: '0'.repeat(64),
-    timestamp: getTimestamp(),
-    miner: "1LpUToTfVj6LVkwpyUnrFEXr3sNcdtRPkX", // 하드코딩
+    timestamp: genesisTimestamp,
+    miner: myKey.pkh, // 하드코딩
     txsHash: sha256(JSON.stringify(transactions)),
     nonce: 0,
     difficulty: INITIAL_DIFFICULTY
@@ -47,8 +47,8 @@ export const getHeadContext = () => cloneDeep(context[context.length - 1])
 const nChainWork: bigint[] = [] // accumulated difficulties for every block
 export const getNChainWork = () => nChainWork
 
-export const initialize = () => {
-  const genesisBlock: Block = createGenesisBlock()
+export const initialize = (genesisTimestamp: number) => {
+  const genesisBlock: Block = createGenesisBlock(genesisTimestamp)
   blockchain.push(genesisBlock)
   updateContext(genesisBlock)
 }
@@ -57,7 +57,7 @@ export const getBlockchain = () => blockchain
 export const getHead = () => blockchain[blockchain.length - 1]
 export const replaceChain = (candidateChain: Blockchain) => {
   const lb = candidateChain[0].header.level
-  const localGenesisBlock = createGenesisBlock()
+  const localGenesisBlock = createGenesisBlock(getTimestamp())
   const isGenesisValid = isEqual(localGenesisBlock, candidateChain[0])
 
   // if candidateChain includes the genesis block, verify it 
@@ -70,35 +70,32 @@ export const replaceChain = (candidateChain: Blockchain) => {
   blockchain = localChain.slice(0, lb).concat(candidateChain)
 }
 
-const getTimestamp = () => parseInt((new Date().getTime() / 1000).toString())
+export const getTimestamp = () => parseInt((new Date().getTime() / 1000).toString())
 
-export const createNewBlock = (txFromMempool: Transaction[]): Block => {
-  // ...
-  const head = getHead()
-  const coinbaseTx = createCoinbaseTx(head.header.level + 1)
-  const transactions = [coinbaseTx, ...txFromMempool]
+// export const createNewBlock = (txFromMempool: Transaction[]): Block => {
+//   // ...
+//   const head = getHead()
+//   const coinbaseTx = createCoinbaseTx(head.header.level + 1)
+//   const transactions = [coinbaseTx, ...txFromMempool]
 
-  const header = {
-    level: head.header.level + 1,
-    previousHash: calculateBlockHash(head.header),
-    timestamp: getTimestamp(),
-    miner: myKey.pkh,
-    txsHash: sha256(JSON.stringify(transactions)),
-    nonce: 0,
-    difficulty: -1
-  }
-  // const hash = calculateBlockHash(header)
+//   const header = {
+//     level: head.header.level + 1,
+//     previousHash: calculateBlockHash(head.header),
+//     timestamp: getTimestamp(),
+//     miner: myKey.pkh,
+//     txsHash: sha256(JSON.stringify(transactions)),
+//     nonce: 0,
+//     difficulty: -1
+//   }
 
-  console.log('??')
+//   const mined = mine(header)
 
-  const mined = mine(header)
-
-  return {
-    hash: mined.hash,
-    header: mined.header,
-    transactions
-  }
-}
+//   return {
+//     hash: mined.hash,
+//     header: mined.header,
+//     transactions
+//   }
+// }
 
 export const pushBlock = (block: Block) => {
   getBlockchain().push(block)

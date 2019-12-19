@@ -3,62 +3,100 @@ import {
   DIFFICULTY_PERIOD,
 } from './constants.json'
 import { Block } from './types/block'
-import { getBlockchain, calculateBlockHash, getHead, createNewBlock, pushBlock } from './blockchain'
+import { getBlockchain, calculateBlockHash, getHead, pushBlock, getTimestamp, myKey } from './blockchain'
 import { broadcastNextBlock } from './node'
+import { createCoinbaseTx } from './transaction'
+import { sha256 } from '../lib/crypto'
+import { Transaction } from './types/transaction'
+import { log } from '../lib/log'
+
+export const difficultyConstant = 0xffff * 256 ** (0x1d - 3)
+
+const miningContext = {
+  intervalContext: null
+}
+
+export const getTxFromMempool: () => Transaction[] = () => []
+
+export const initialize = () => {
+  requestMine(getTxFromMempool())
+  log('miner started')
+}
+
+// changes mining context.
+// our miner is "always" working for something,
+// changing context will signal new block
+export const requestMine = async (
+  txFromMempool: Transaction[]
+) => {
+  const head = getHead()
+  const coinbaseTx = createCoinbaseTx(head.header.level + 1)
+  const transactions = [coinbaseTx, ...txFromMempool]
+
+  const nextBlockHeader = {
+    level: head.header.level + 1,
+    previousHash: calculateBlockHash(head.header),
+    timestamp: getTimestamp(),
+    miner: myKey.pkh,
+    txsHash: sha256(JSON.stringify(transactions)),
+    nonce: 0,
+    difficulty: -1
+  }
+
+  const difficulty = nextBlockHeader.difficulty = calculateDifficulty(nextBlockHeader)
+
+  // stop previous mining loop
+  clearInterval(miningContext.intervalContext)
+
+  // start a new mining loop
+  miningContext.intervalContext = setInterval(() => {
+
+    // up nonce
+    nextBlockHeader.nonce++
+
+    const target = BigInt(difficultyConstant / difficulty)
+    const mined = mine(nextBlockHeader, target)
+
+    // if answer is not found, do nothing
+    if(!mined) return
+
+    // if answer __IS__ found, push this block and request new mine
+    const { hash, header } = mined
+    const nextBlock = { hash, header, transactions }
+
+    pushBlock(nextBlock)
+    broadcastNextBlock(nextBlock)
+
+    // another loop
+    requestMine(getTxFromMempool())
+  }, 0)
+}
+
 
 interface MineResult {
   hash: string,
   header: Block["header"]
 }
 
-export const initialize = () => {
-  const nextBlock = createNewBlock([])
-  pushBlock(nextBlock)
-  broadcastNextBlock(nextBlock)
-}
+export const mine = (
+  nextBlockHeader: Block["header"],
+  target: bigint
+): MineResult | null => {
+  const blockHash = calculateBlockHash(nextBlockHeader)
 
-export const difficultyConstant = 0xffff * 256 ** (0x1d - 3)
+  // if blockHash is highter than the target,
+  // we haven't "mined" yet
+  if(BigInt(`0x${blockHash}`) >= target) return null
 
-export const mine = (nextBlockHeader: Block["header"]): MineResult => {
-
-  // should change difficulty?
-  const difficulty = calculateDifficulty(nextBlockHeader)
-  const target = BigInt(difficultyConstant / difficulty)
-
-  nextBlockHeader.difficulty = difficulty
-
-  let nonce = 0;
-  let blockHash: string = '';
-
-  while (true) {
-    nextBlockHeader.nonce = nonce
-    blockHash = calculateBlockHash(nextBlockHeader)
-
-    // console.log({blockHash})
-    // console.log({difficulty})
-    // process.stdout.write(`\r${BigInt(`0x${blockHash}`)}`)
-    // console.log(new BN(blockHash))
-    // console.log(new BN(target.toString()))
-    if (BigInt(`0x${blockHash}`) < target) break;
-
-    nonce++
-  }
-
-  console.log('block created', {
-    level: nextBlockHeader.level,
-    difficulty: nextBlockHeader.difficulty,
-    nonce,
-    hash__: BigInt(`0x${blockHash}`),
-    target: target
-  })
-
+  // if our blockHash is lower than the target,
+  // then we have "mined" and proven our work
+  log(`[miner] block created ${JSON.stringify({ level: nextBlockHeader.level })}`)
+  
   return {
     hash: blockHash,
     header: nextBlockHeader
   }
 }
-
-
 
 const calculateDifficulty = (nextBlockHeader: Block["header"]) => {
   const { level, timestamp } = nextBlockHeader

@@ -8,4 +8,6 @@
 
 // push 전 block validate
 // transaction processing (mempool update)
-// async loop
+// 
+// always mining
+// --> when injected, cancel and mine new

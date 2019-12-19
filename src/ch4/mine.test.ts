@@ -1,14 +1,6 @@
-import { createNewBlock, pushBlock, initialize, getHead } from "./blockchain"
+import { initialize } from "./blockchain"
+import { initialize as initializeMiner } from './miner'
 
 initialize()
+initializeMiner()
 
-for (let i = 0; i < 120; i++) {
-  const nb = createNewBlock([])
-  pushBlock(nb)
-
-  console.log({
-    nonce: nb.header.nonce
-  })
-}
-
-console.log(getHead().header)

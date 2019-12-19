@@ -8,39 +8,62 @@ import {
   createSyncResponseMsg,
   createSyncRequestMsg,
   createPeerResponseMsg,
-  createBlockInjectedMsg
+  createBlockInjectedMsg,
+  Message,
+  MessageTypeNames
 } from './types/messages'
-import { getHead, getBlockchain, replaceChain, pushBlock, createNewBlock } from './blockchain'
+import { getHead, getBlockchain, replaceChain, pushBlock } from './blockchain'
 import { Block, Blockchain } from './types/block'
+import { log } from '../lib/log'
+import { requestMine, getTxFromMempool } from './miner'
+
+
+// debug
+const _send = WebSocket.prototype.send
+WebSocket.prototype.send = function() {
+  const data = JSON.parse(arguments[0]) as Message
+  log(`[outgoing] => ${MessageTypeNames[data.type]}`)
+  return _send.call(this, ...arguments)
+}
 
 const peers: Map<string, WebSocket> = new Map()
 
-export const initialize = () => {
-  const server = new WebSocketServer({ port: +process.env.port })
+const nodeContext = {
+  port: 9732
+}
+
+export const initialize = (port: number) => {
+  nodeContext.port = port
+
+  const server = new WebSocketServer({ port })
+  log('server open')
   server.on('connection', (ws, req) => {
-    log(`hi~ ${req.connection.remoteAddress}:${req.connection.localPort}`)
+    const { connection } = req
+    log(`peer connected`)
 
     ws.on('close', () => {
-      log(`peer ${ws.url} closed`)
-      peers.delete(ws.url)
+      log(`peer closed`)
+      peers.delete(`${connection}`)
     })
 
     ws.on('error', () => {
-      log(`peer ${ws.url} errored`)
+      log(`peer errored`)
       peers.delete(ws.url)
     })
 
     messageHandler(ws)
   })
 
-  log('running')
+  log('connecting to peers...')
 
-  BOOTSTRAP_PEERS.map(connectToPeer)
+  // connnect to peers
+  const myAddr = `localhost:${port}`
+  BOOTSTRAP_PEERS.filter(addr => addr !== myAddr).map(connectToPeer)
 }
 
 const connectToPeer = async (peerAddress: string) => {
+  // don't connect to me
   const peerConnection = new WebSocket(`ws://${peerAddress}`)
-
   log(`connecting to peer ${peerAddress}`)
 
   peerConnection.on('close', () => {
@@ -63,7 +86,8 @@ const connectToPeer = async (peerAddress: string) => {
     peerConnection.send(syncRequestMessage)
 
     // send my peer list
-    const peerRequestMsg = createPeerRequestMsg('localhost', +process.env.port)
+    const peerRequestMsg = createPeerRequestMsg('localhost', nodeContext.port
+    )
     peerConnection.send(peerRequestMsg)
 
     // assign message handler
@@ -126,7 +150,7 @@ const messageHandlers = {
   // block injected
   [MessageTypes.BLOCK_INJECTED]: (peer: WebSocket, block: Block) => {
     pushBlock(block)
-    createNewBlock([])
+    requestMine(getTxFromMempool())
   }
 
   // // what is your latest block?
@@ -215,13 +239,12 @@ const messageHandler = (peer: WebSocket) => {
     const parsed = JSON.parse(data)
     const { type, body } = parsed
 
-    log(`[incoming] ${type}, ${JSON.stringify(body, null, 2)}`)
+    log(`[incoming] <= ${MessageTypeNames[type]}`)
 
     messageHandlers[type](peer, body)
   })
 }
 
-const log = (msg: string) => console.log(`${process.env.port}: ${msg}`)
 
 export const broadcastNextBlock = (block: Block) => {
   peers.forEach(peer => {
