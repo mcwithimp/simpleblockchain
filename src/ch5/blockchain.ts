@@ -3,9 +3,11 @@ import { Transaction } from './types/transaction'
 import { sha256 } from '../lib/crypto'
 import { createCoinbaseTx } from './transaction'
 import { UTxO, Context } from './types/context'
-import clonedeep from 'lodash.clonedeep'
+import cloneDeep from 'lodash.clonedeep'
 
-export const getHash = (data: object): string => sha256(JSON.stringify(data))
+import { INITIAL_DIFFICULTY } from './constants.json'
+import { mine, difficultyConstant } from './miner'
+import { getTimestamp, getHash } from './verifier'
 
 export const myKey = {
   "alias": "myKeys1",
@@ -20,9 +22,11 @@ const createGenesisBlock = (): Block => {
   const header = {
     level: 0,
     previousHash: '0'.repeat(64),
-    timestamp: 1576482055,
+    timestamp: getTimestamp(),
     miner: "1LpUToTfVj6LVkwpyUnrFEXr3sNcdtRPkX", // 하드코딩
-    txsHash: getHash(transactions)
+    txsHash: getHash(transactions),
+    nonce: 0,
+    difficulty: INITIAL_DIFFICULTY
   }
   const hash = getHash(header)
 
@@ -36,7 +40,11 @@ const createGenesisBlock = (): Block => {
 
 let blockchain: Blockchain = []
 const context: Context = []
-export const getHeadContext = () => clonedeep(context[context.length - 1])
+export const getHeadContext = () => cloneDeep(context[context.length - 1])
+
+// We need to compute 2**256 / (bnTarget+1)
+const nChainWork: bigint[] = [] // accumulated difficulties for every block
+export const getNChainWork = () => nChainWork
 
 export const initialize = () => {
   const genesisBlock: Block = createGenesisBlock()
@@ -46,8 +54,12 @@ export const initialize = () => {
 
 export const getBlockchain = () => blockchain
 export const getHead = () => blockchain[blockchain.length - 1]
-
-const getTimestamp = () => Math.floor(new Date().getTime() / 1000)
+export const replaceChain = (candidateChain: Blockchain) => {
+  const lb = candidateChain[0].header.level
+  const localChain = getBlockchain()
+  blockchain = localChain.slice(0, lb)
+  candidateChain.forEach(block => processBlock(block))
+}
 
 export const createNewBlock = (txFromMempool: Transaction[]): Block => {
   // ...
@@ -60,15 +72,23 @@ export const createNewBlock = (txFromMempool: Transaction[]): Block => {
     previousHash: head.hash,
     timestamp: getTimestamp(),
     miner: myKey.pkh,
-    txsHash: getHash(transactions)
+    txsHash: getHash(transactions),
+    nonce: 0,
+    difficulty: -1
   }
-  const hash = getHash(header)
+
+  const mined = mine(header)
 
   return {
-    hash,
-    header,
+    hash: mined.hash,
+    header: mined.header,
     transactions
   }
+}
+
+export const processBlock = (block: Block) => {
+  pushBlock(block)
+  updateContext(block)
 }
 
 export const pushBlock = (block: Block) => {
@@ -96,5 +116,13 @@ export const updateContext = (block: Block) => {
   })
 
   context[block.header.level] = utxoSet
+
+  // update nChainWork
+  const nChainWork = getNChainWork()
+  const prevNChainWork = nChainWork[block.header.level - 1] || BigInt(0)
+  const difficulty = block.header.difficulty
+  const target = BigInt(difficultyConstant / difficulty)
+
+  nChainWork[block.header.level] = prevNChainWork + BigInt(2 ** 256) / (target + BigInt(1))
 }
 

@@ -1,6 +1,8 @@
-import { initialize } from "./blockchain"
+import { initialize as initializeBlockchain, getTimestamp } from "./blockchain"
 import { initialize as initializeMiner } from './miner'
 
-initialize()
+const genesisTimestamp = getTimestamp()
+
+initializeBlockchain(genesisTimestamp)
 initializeMiner()
 

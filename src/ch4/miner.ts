@@ -3,7 +3,7 @@ import {
   DIFFICULTY_PERIOD,
 } from './constants.json'
 import { Block } from './types/block'
-import { getBlockchain, calculateBlockHash, getHead, pushBlock, getTimestamp, myKey } from './blockchain'
+import { getBlockchain, getHash, getHead, pushBlock, getTimestamp, myKey } from './blockchain'
 import { broadcastNextBlock } from './node'
 import { createCoinbaseTx } from './transaction'
 import { sha256 } from '../lib/crypto'
@@ -35,7 +35,7 @@ export const requestMine = async (
 
   const nextBlockHeader = {
     level: head.header.level + 1,
-    previousHash: calculateBlockHash(head.header),
+    previousHash: getHash(head.header),
     timestamp: getTimestamp(),
     miner: myKey.pkh,
     txsHash: sha256(JSON.stringify(transactions)),
@@ -82,7 +82,7 @@ export const mine = (
   nextBlockHeader: Block["header"],
   target: bigint
 ): MineResult | null => {
-  const blockHash = calculateBlockHash(nextBlockHeader)
+  const blockHash = getHash(nextBlockHeader)
 
   // if blockHash is highter than the target,
   // we haven't "mined" yet

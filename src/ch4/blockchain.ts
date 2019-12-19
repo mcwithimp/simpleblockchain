@@ -9,7 +9,8 @@ import isEqual from 'lodash.isequal'
 import { INITIAL_DIFFICULTY } from './constants.json'
 import { difficultyConstant } from './miner'
 
-export const calculateBlockHash = (blockHeader: Block["header"]): string => sha256(JSON.stringify(blockHeader))
+export const getHash = (data: object): string => sha256(JSON.stringify(data))
+
 export const myKey = {
   "alias": "myKeys1",
   "sk": "110efe13c20b8278881fc366f64e695c6880f67a37f75eabd3fea2e7f9b6f342",
@@ -29,7 +30,7 @@ const createGenesisBlock = (genesisTimestamp: number): Block => {
     nonce: 0,
     difficulty: INITIAL_DIFFICULTY
   }
-  const hash = calculateBlockHash(header)
+  const hash = getHash(header)
 
   return {
     hash,

@@ -1,7 +1,7 @@
 import { Block, Blockchain, Transaction } from './types/block'
 import { sha256 } from '../lib/crypto'
 
-export const calculateBlockHash = (blockHeader: Block["header"]): string => sha256(JSON.stringify(blockHeader))
+export const getHash = (data: object): string => sha256(JSON.stringify(data))
 
 const myKey = {
   "alias": "myKeys1",
@@ -17,9 +17,9 @@ const createGenesisBlock = (): Block => {
     previousHash: '0'.repeat(64),
     timestamp: 1576482055,
     miner: "1LpUToTfVj6LVkwpyUnrFEXr3sNcdtRPkX", // 하드코딩
-    txsHash: sha256(JSON.stringify(transactions))
+    txsHash: getHash(transactions)
   }
-  const hash = calculateBlockHash(header)
+  const hash = getHash(header)
 
   return {
     hash,
@@ -36,18 +36,18 @@ export const getBlockchain = () => blockchain
 export const getHead = () => blockchain[blockchain.length - 1]
 
 
-const getTimestamp = () => parseInt((new Date().getTime() / 1000).toString())
+const getTimestamp = () => Math.floor(new Date().getTime() / 1000)
 
 export const createNewBlock = (transactions: Transaction[]): Block => {
   const head = getHead()
   const header = {
     level: head.header.level + 1,
-    previousHash: calculateBlockHash(head.header),
+    previousHash: head.hash,
     timestamp: getTimestamp(),
     miner: myKey.pkh,
-    txsHash: sha256(JSON.stringify(transactions))
+    txsHash: getHash(transactions)
   }
-  const hash = calculateBlockHash(header)
+  const hash = getHash(header)
 
   return {
     hash,

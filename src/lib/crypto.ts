@@ -2,7 +2,7 @@ import * as CryptoJS from 'crypto-js'
 // yarn add --dev @types/elliptic
 import { ec as EC } from 'elliptic'
 // yarn add --dev @types/bs58
-import * as base58 from 'bs58'
+import * as bs58 from 'bs58'
 import * as fs from 'fs'
 import path from 'path'
 
@@ -15,7 +15,7 @@ const ec = new EC('secp256k1');
 const toHexBinary = (hexString: string) => CryptoJS.enc.Hex.parse(hexString)
 const hexToDecimal = (hexString: string) => new BN(hexString, 'hex').toString(10)
 
-export const sign = (sk: string, data: string): string => {
+export const signTx = (sk: string, data: string): string => {
   const dataHash = sha256(data);
   const key = ec.keyFromPrivate(sk, "hex")
   const ecdsaSig = key.sign(dataHash, { canonical: true })
@@ -46,7 +46,7 @@ const recoverSignatureParams = (derSignaure: string) => {
   }
 }
 
-export const verify = (data: string, signature: string): boolean => {
+export const verifyTx = (data: string, signature: string): boolean => {
   try {
     const dataHash = sha256(data)
     const ecdsaSig = recoverSignatureParams(signature)
@@ -70,6 +70,18 @@ export const verify = (data: string, signature: string): boolean => {
   }
 }
 
+export const verifyAddress = (address: string): boolean => {
+  const decoded = bs58.decode(address).toString('hex')
+  const pkh = decoded.slice(0, decoded.length - 8)
+  const checksum = decoded.slice(decoded.length - 8)
+
+  const hashed = sha256(toHexBinary(pkh))
+  const doubleHashed = sha256(toHexBinary(hashed))
+  const localChecksum = doubleHashed.substring(0, 8)
+
+  return (checksum == localChecksum)
+}
+
 export const generateKeys = (keyName: string) => {
   const keypath = path.resolve(__dirname, './client/keys.json')
   var savedKeys = JSON.parse(fs.readFileSync(keypath).toString());
@@ -82,6 +94,9 @@ export const generateKeys = (keyName: string) => {
   const key = ec.genKeyPair();
   const sk = key.getPrivate('hex');
   const pk = key.getPublic('hex');
+
+  // we only care P2PKH which begin with the number 1 
+  // and is and identifier of 26-25 alphanumeric characters
   const hash = sha256(toHexBinary(pk)).toString()
   const pubKeyHash = CryptoJS.RIPEMD160(toHexBinary(hash)).toString()
   const prefixed = "00" + pubKeyHash;
@@ -89,7 +104,7 @@ export const generateKeys = (keyName: string) => {
   const doubleHashed = sha256(toHexBinary(hashed))
   const checksum = doubleHashed.substring(0, 8)
   const rawAddress = prefixed + checksum
-  const b58EncodedAddress = base58.encode(Buffer.from(rawAddress, 'hex'))
+  const b58EncodedAddress = bs58.encode(Buffer.from(rawAddress, 'hex'))
 
   const newKeys = {
     alias: keyName,
