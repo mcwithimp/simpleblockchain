@@ -16,7 +16,7 @@ export const myKey = {
   "pkh": "1LpUToTfVj6LVkwpyUnrFEXr3sNcdtRPkX"
 }
 
-const createGenesisBlock = (): Block => {
+const createGenesisBlock = (genesisTimestamp: number): Block => {
   const genesisCoinbase = createCoinbaseTx(0)
   const transactions = [genesisCoinbase]
   const header = {
@@ -46,8 +46,8 @@ export const getHeadContext = () => cloneDeep(context[context.length - 1])
 const nChainWork: bigint[] = [] // accumulated difficulties for every block
 export const getNChainWork = () => nChainWork
 
-export const initialize = () => {
-  const genesisBlock: Block = createGenesisBlock()
+export const initialize = (genesisTimestamp: number) => {
+  const genesisBlock: Block = createGenesisBlock(genesisTimestamp)
   blockchain.push(genesisBlock)
   updateContext(genesisBlock)
 }
