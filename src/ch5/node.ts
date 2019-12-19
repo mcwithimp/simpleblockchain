@@ -12,9 +12,9 @@ import {
 } from './types/messages'
 import { getHead, getBlockchain, replaceChain, pushBlock } from './blockchain'
 import { Block, Blockchain } from './types/block'
-import { verifyChain } from './verifier.js'
-import { getTxFromMempool, requestMine } from './miner.js'
-import { MessageTypeNames } from '../ch4/types/messages.js'
+import { verifyChain } from './verifier'
+import { getTxFromMempool, requestMine } from './miner'
+import { MessageTypeNames } from '../ch4/types/messages'
 
 // debug
 const _send = WebSocket.prototype.send
@@ -245,7 +245,7 @@ const messageHandler = (peer: WebSocket) => {
     const parsed = JSON.parse(data)
     const { type, body } = parsed
 
-    log(`[incoming] ${type}, ${JSON.stringify(body, null, 2)}`)
+    log(`[incoming] ${type}`)
 
     messageHandlers[type](peer, body)
   })

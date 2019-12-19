@@ -1,9 +1,9 @@
 import { BLOCK_INTERVAL } from './constants.json'
 import { getHead, getBlockchain } from './blockchain'
-import { Blockchain, Block } from './types/block.js'
+import { Blockchain, Block } from './types/block'
 import isEqual from 'lodash.isequal'
-import { sha256 } from '../lib/crypto.js'
-import { difficultyConstant } from './miner.js'
+import { sha256 } from '../lib/crypto'
+import { difficultyConstant } from './miner'
 
 export const getHash = (data: object): string => sha256(JSON.stringify(data))
 export const getTimestamp = () => Math.floor(new Date().getTime() / 1000)
@@ -68,7 +68,10 @@ export const verifyChain = (candidateChain: Blockchain) : boolean => {
 
   // now we can replace the part or all of localChain with candidateChain
   // copy and merge the chain
-  const merged = [localChain[lb.header.level - 1]].concat(candidateChain)
+  const merged = lb.header.level === 0
+    ? candidateChain
+    : [localChain[lb.header.level - 1]].concat(candidateChain)
+
 
   // check level, timestamp, previousHash and block itself 
   const isChainValid = merged.slice(1).every((block, _idx) => {
