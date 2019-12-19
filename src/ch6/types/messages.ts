@@ -74,8 +74,6 @@ export const createSyncResponseMsg = (blockchain: Blockchain | null) => JSON.str
 //   body: blockchain
 // })
 
-
-
 export const createBlockInjectedMsg = (block: Block) => JSON.stringify({
   type: MessageTypes.BLOCK_INJECTED,
   body: block

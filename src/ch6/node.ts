@@ -11,7 +11,7 @@ import {
   Message,
   createTxInjectedMsg
 } from './types/messages'
-import { getHead, getBlockchain, replaceChain, pushBlock, pushToMempool } from './blockchain'
+import { getHead, getBlockchain, replaceChain, pushBlock, pushToMempool, flushMempool } from './blockchain'
 import { Block, Blockchain } from './types/block'
 import { verifyChain } from './verifier'
 import { getTxFromMempool, requestMine, pauseMine } from './miner'
@@ -173,6 +173,7 @@ const messageHandlers = {
       console.log("The new injected block is not valid")
       return
     } 
+
     pushBlock(block)
     requestMine(getTxFromMempool())
   },
