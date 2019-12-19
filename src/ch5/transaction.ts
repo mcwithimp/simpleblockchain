@@ -2,7 +2,8 @@ import { Transaction } from "./types/transaction"
 import { myKey } from './blockchain'
 
 import { BLOCK_REWARD } from './constants.json'
-import { sha256, signTx } from "../lib/crypto"
+import { signTx } from "../lib/crypto"
+import { getHash } from "./verifier"
 
 export const createCoinbaseTx = (blockLevel: number): Transaction => {
   const txIns = [{
@@ -14,7 +15,7 @@ export const createCoinbaseTx = (blockLevel: number): Transaction => {
     amount: BLOCK_REWARD
   }]
 
-  const txId = sha256(JSON.stringify({ txIns, txOuts }))
+  const txId = getHash({ txIns, txOuts })
   const signature = signTx(myKey.sk, txId)
 
   return {
