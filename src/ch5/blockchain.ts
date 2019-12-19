@@ -113,6 +113,11 @@ export const updateContext = (block: Block) => {
       }
       utxoSet[`tx.txId_${_idx}`] = utxo
     })
+
+    // delete spent txOuts
+    tx.txIns.forEach(txIn => {
+      delete utxoSet[`txIn.txOutId_${txIn.txOutIdx}`]
+    })
   })
 
 
