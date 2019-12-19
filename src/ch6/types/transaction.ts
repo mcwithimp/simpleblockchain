@@ -14,3 +14,9 @@ export interface Transaction {
   txOuts: TxOut[],
   signature: string
 }
+
+export interface TransactionInput {
+  from: string,
+  to: string,
+  amount: number
+}
