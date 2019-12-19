@@ -103,17 +103,23 @@ export const updateContext = (block: Block) => {
   const utxoSet = getHeadContext() || {}
 
   transactions.forEach(tx => {
-    const utxos = tx.txOuts.map((txOut, _idx): UTxO => {
-      return {
+    // add new txOuts
+    tx.txOuts.forEach((txOut, _idx) => {
+      const utxo = {
         txOutId: tx.txId,
         txOutIdx: _idx,
         address: txOut.address,
         amount: txOut.amount
       }
+      utxoSet[`tx.txId_${_idx}`] = utxo
     })
 
-    utxoSet[tx.txId] = utxos
+    // delete spent txOuts
+    tx.txIns.forEach(txIn => {
+      delete utxoSet[`txIn.txOutId_${txIn.txOutIdx}`]
+    })
   })
+
 
   context[block.header.level] = utxoSet
 
