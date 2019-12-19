@@ -8,6 +8,7 @@ import isEqual from 'lodash.isequal'
 
 import { INITIAL_DIFFICULTY } from './constants.json'
 import { difficultyConstant } from './miner'
+import { log } from '../lib/log'
 
 export const getHash = (data: object): string => sha256(JSON.stringify(data))
 
@@ -21,6 +22,9 @@ export const myKey = {
 const createGenesisBlock = (genesisTimestamp: number): Block => {
   const genesisCoinbase = createCoinbaseTx(0)
   const transactions = [genesisCoinbase]
+
+  log(genesisTimestamp.toString())
+
   const header = {
     level: 0,
     previousHash: '0'.repeat(64),
@@ -58,17 +62,14 @@ export const getBlockchain = () => blockchain
 export const getHead = () => blockchain[blockchain.length - 1]
 export const replaceChain = (candidateChain: Blockchain) => {
   const lb = candidateChain[0].header.level
-  const localGenesisBlock = createGenesisBlock(getTimestamp())
-  const isGenesisValid = isEqual(localGenesisBlock, candidateChain[0])
-
-  // if candidateChain includes the genesis block, verify it 
-  if (lb === 0 && isGenesisValid === false) {
-    console.log('The remote genesis block is invalid!')
-    return    
-  }
-
   const localChain = getBlockchain()
-  blockchain = localChain.slice(0, lb).concat(candidateChain)
+  blockchain = localChain.slice(0, lb)
+  candidateChain.forEach(block => processBlock(block))
+}
+
+export const processBlock = (block: Block) => {
+  pushBlock(block)
+  updateContext(block)
 }
 
 export const getTimestamp = () => parseInt((new Date().getTime() / 1000).toString())

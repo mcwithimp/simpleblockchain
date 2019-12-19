@@ -3,7 +3,7 @@ import { initialize as initializeNode } from './node'
 import { initialize as initializeMiner } from './miner'
 import cluster from 'cluster'
 
-const genesisTimestamp = +process.env.GENESIS_TIMESTAMP
+const genesisTimestamp = 1576740013
 
 if(cluster.isMaster) {
   initializeBlockchain(genesisTimestamp)
