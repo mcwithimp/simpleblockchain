@@ -161,7 +161,7 @@ const messageHandlers = {
     }
 
     // do nothing if remote head is lower than mine
-    else if(block.header.level < localHead.header.level) {
+    else if(block.header.level <= localHead.header.level) {
       return 
     }
 
