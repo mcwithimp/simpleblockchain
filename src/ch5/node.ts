@@ -12,9 +12,9 @@ import {
 } from './types/messages'
 import { getHead, getBlockchain, replaceChain, pushBlock } from './blockchain'
 import { Block, Blockchain } from './types/block'
-import { verifyChain } from './verifier.js'
-import { getTxFromMempool, requestMine } from './miner.js'
-import { MessageTypeNames } from '../ch4/types/messages.js'
+import { verifyChain } from './verifier'
+import { getTxFromMempool, requestMine } from './miner'
+import { MessageTypeNames } from '../ch4/types/messages'
 
 // debug
 const _send = WebSocket.prototype.send
