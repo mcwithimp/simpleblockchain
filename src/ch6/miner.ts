@@ -3,7 +3,7 @@ import {
   DIFFICULTY_PERIOD,
 } from './constants.json'
 import { Block } from './types/block'
-import { getBlockchain, getHead, myKey, processBlock } from './blockchain'
+import { getBlockchain, getHead, myKey, processBlock, getMempool, flushMempool } from './blockchain'
 import { getHash, getTimestamp } from './verifier'
 import { broadcastNextBlock } from './node'
 import { createCoinbaseTx } from './transaction'
@@ -17,8 +17,7 @@ const miningContext = {
   intervalContext: null // timer
 }
 
-export const getTxFromMempool: () => Transaction[] = () => []
-
+export const getTxFromMempool = () => getMempool()
 export const initialize = () => {
   requestMine(getTxFromMempool())
   log('miner started')
@@ -65,6 +64,10 @@ export const requestMine = async (
     // if answer __IS__ found, push this block and request new mine
     const { hash, header } = mined
     const nextBlock = { hash, header, transactions }
+
+    flushMempool()
+
+    log(`[miner] ---- tx length: ${transactions.length}`)
 
     processBlock(nextBlock)
     broadcastNextBlock(nextBlock)

@@ -8,13 +8,15 @@ import {
   createSyncRequestMsg,
   createPeerResponseMsg,
   createBlockInjectedMsg,
-  Message
+  Message,
+  createTxInjectedMsg
 } from './types/messages'
-import { getHead, getBlockchain, replaceChain, pushBlock } from './blockchain'
+import { getHead, getBlockchain, replaceChain, pushBlock, pushToMempool } from './blockchain'
 import { Block, Blockchain } from './types/block'
 import { verifyChain } from './verifier'
 import { getTxFromMempool, requestMine, pauseMine } from './miner'
 import { MessageTypeNames } from './types/messages'
+import { Transaction } from './types/transaction'
 
 // debug
 const _send = WebSocket.prototype.send
@@ -173,6 +175,11 @@ const messageHandlers = {
     } 
     pushBlock(block)
     requestMine(getTxFromMempool())
+  },
+
+  [MessageTypes.TRANSACTION_INJECTED]: (peer: WebSocket, tx: Transaction) => {
+    // TODO: validate
+    pushToMempool(tx)
   }
 
   // // what is your latest block?
@@ -247,9 +254,20 @@ const messageHandlers = {
   //   const remoteHead = remoteChain[remoteChain.length - 1]
 
   //   if(remoteHead === null) return
-  //   if(localHead.header.level >= remoteHead.header.level) return
+  //   if(localHead.header.lev
+// if(cluster.isMaster) {
+//   initializeBlockchain(genesisTimestamp)
+//   initializeNode(9732)
+//   initializeMiner()
 
-  //   syncBlockchain(remoteChain)
+//   setTimeout(() => {
+//     for(let i=0; i<3; i++) cluster.fork()
+//   }, 5000)
+// }
+
+// else {
+//   initializeBlockchain(genesisTimestamp)
+//   initialiain)
 
 
   // }
@@ -270,12 +288,19 @@ const messageHandler = (peer: WebSocket) => {
 const log = (msg: string) => console.log(`${process.env.port}: ${msg}`)
 
 export const broadcastNextBlock = (block: Block) => {
+  const blockInjectedMessage = createBlockInjectedMsg(block)
   peers.forEach(peer => {
-    const blockInjectedMessage = createBlockInjectedMsg(block)
     peer.send(blockInjectedMessage)
   })
 
   // const nextBlock = createNewBlock([])
   // pushBlock(nextBlock)
   
+}
+
+export const broadcastTransaction = (tx: Transaction) => {
+  const txInjectedMessage = createTxInjectedMsg(tx)
+  peers.forEach(peer => {
+    peer.send(txInjectedMessage)
+  })
 }

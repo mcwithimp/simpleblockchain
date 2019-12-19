@@ -1,4 +1,5 @@
 import { Block, Blockchain } from "./block"
+import { Transaction } from "./transaction"
 
 export interface Message {
   type: MessageTypes,
@@ -78,4 +79,9 @@ export const createSyncResponseMsg = (blockchain: Blockchain | null) => JSON.str
 export const createBlockInjectedMsg = (block: Block) => JSON.stringify({
   type: MessageTypes.BLOCK_INJECTED,
   body: block
+})
+
+export const createTxInjectedMsg = (tx: Transaction) => JSON.stringify({
+  type: MessageTypes.TRANSACTION_INJECTED,
+  body: tx
 })

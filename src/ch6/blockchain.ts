@@ -47,6 +47,8 @@ export const getHead = () => blockchain[blockchain.length - 1]
 export const getContext = () => context
 export const getHeadContext = () => cloneDeep(context[context.length - 1])
 export const getMempool = () => cloneDeep(mempool)
+export const flushMempool = () => { mempool = [] }
+export const pushToMempool = (transaction: Transaction) => mempool.push(transaction)
 
 // We need to compute 2**256 / (bnTarget+1)
 const nChainWork: bigint[] = [] // accumulated difficulties for every block
