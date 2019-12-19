@@ -14,7 +14,7 @@ import { getHead, getBlockchain, replaceChain, pushBlock } from './blockchain'
 import { Block, Blockchain } from './types/block'
 import { verifyChain } from './verifier'
 import { getTxFromMempool, requestMine } from './miner'
-import { MessageTypeNames } from '../ch4/types/messages'
+import { MessageTypeNames } from './types/messages'
 
 // debug
 const _send = WebSocket.prototype.send
@@ -151,7 +151,22 @@ const messageHandlers = {
 
   // block injected
   [MessageTypes.BLOCK_INJECTED]: (peer: WebSocket, block: Block) => {
-    if (verifyChain([block]) == false) {
+    const localHead = getHead()
+
+    // if remote chain is higher than local chain more than 1 level,
+    // request theirs
+    if(block.header.level > localHead.header.level + 1) {
+      const syncRequestMsg = createSyncRequestMsg(localHead.header)
+      peer.send(syncRequestMsg)
+    }
+
+    // do nothing if remote head is lower than mine
+    else if(block.header.level < localHead.header.level) {
+      return 
+    }
+
+    // otherwise, verify
+    else if (verifyChain([block]) == false) {
       console.log("The new injected block is not valid")
       return
     } 
