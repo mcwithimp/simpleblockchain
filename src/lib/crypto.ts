@@ -5,7 +5,6 @@ import { ec as EC } from 'elliptic'
 import * as bs58 from 'bs58'
 import * as fs from 'fs'
 import path from 'path'
-
 import BN from 'bn.js'
 
 export const sha256 = (data: string): string => CryptoJS.SHA256(data).toString()
@@ -83,7 +82,8 @@ export const verifyAddress = (address: string): boolean => {
 }
 
 export const generateKeys = (keyName: string) => {
-  const keypath = path.resolve(__dirname, './client/keys.json')
+  const keypath = path.resolve(__dirname, '../client/keys.json')
+  console.log({keypath})
   var savedKeys = JSON.parse(fs.readFileSync(keypath).toString());
 
   if (savedKeys.find(x => x.alias === keyName) !== undefined) {
@@ -118,6 +118,4 @@ export const generateKeys = (keyName: string) => {
   return true
 }
 
-// For genesis dictator
-// keys.json initialized as empty array []
-// generateKeys("myKeys1")
+generateKeys("myKeys1")
