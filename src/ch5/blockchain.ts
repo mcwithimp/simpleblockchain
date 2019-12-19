@@ -4,12 +4,11 @@ import { sha256 } from '../lib/crypto'
 import { createCoinbaseTx } from './transaction'
 import { UTxO, Context } from './types/context'
 import cloneDeep from 'lodash.clonedeep'
-import isEqual from 'lodash.isequal'
 
 import { INITIAL_DIFFICULTY } from './constants.json'
 import { mine, difficultyConstant } from './miner'
+import { getTimestamp, calculateBlockHash } from './verifier'
 
-export const calculateBlockHash = (blockHeader: Block["header"]): string => sha256(JSON.stringify(blockHeader))
 export const myKey = {
   "alias": "myKeys1",
   "sk": "110efe13c20b8278881fc366f64e695c6880f67a37f75eabd3fea2e7f9b6f342",
@@ -57,20 +56,10 @@ export const getBlockchain = () => blockchain
 export const getHead = () => blockchain[blockchain.length - 1]
 export const replaceChain = (candidateChain: Blockchain) => {
   const lb = candidateChain[0].header.level
-  const localGenesisBlock = createGenesisBlock()
-  const isGenesisValid = isEqual(localGenesisBlock, candidateChain[0])
-
-  // if candidateChain includes the genesis block, verify it 
-  if (lb === 0 && isGenesisValid === false) {
-    console.log('The remote genesis block is invalid!')
-    return    
-  }
-
   const localChain = getBlockchain()
-  blockchain = localChain.slice(0, lb).concat(candidateChain)
+  blockchain = localChain.slice(0, lb)
+  candidateChain.forEach(block => processBlock(block))
 }
-
-const getTimestamp = () => parseInt((new Date().getTime() / 1000).toString())
 
 export const createNewBlock = (txFromMempool: Transaction[]): Block => {
   // ...
@@ -80,16 +69,13 @@ export const createNewBlock = (txFromMempool: Transaction[]): Block => {
 
   const header = {
     level: head.header.level + 1,
-    previousHash: calculateBlockHash(head.header),
+    previousHash: head.hash,
     timestamp: getTimestamp(),
     miner: myKey.pkh,
     txsHash: sha256(JSON.stringify(transactions)),
     nonce: 0,
     difficulty: -1
   }
-  // const hash = calculateBlockHash(header)
-
-  console.log('??')
 
   const mined = mine(header)
 
@@ -98,6 +84,11 @@ export const createNewBlock = (txFromMempool: Transaction[]): Block => {
     header: mined.header,
     transactions
   }
+}
+
+export const processBlock = (block: Block) => {
+  pushBlock(block)
+  updateContext(block)
 }
 
 export const pushBlock = (block: Block) => {

@@ -12,6 +12,7 @@ import {
 } from './types/messages'
 import { getHead, getBlockchain, replaceChain, pushBlock, createNewBlock } from './blockchain'
 import { Block, Blockchain } from './types/block'
+import { verifyChain } from './verifier.js'
 
 const peers: Map<string, WebSocket> = new Map()
 
@@ -118,7 +119,9 @@ const messageHandlers = {
     // if peer sent nothing, do nothing
     if (candidateChain === null) return
 
-    //
+    // verify chain
+    if (verifyChain(candidateChain)) 
+
     replaceChain(candidateChain)
   },
 

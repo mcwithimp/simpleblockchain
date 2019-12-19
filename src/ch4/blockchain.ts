@@ -70,7 +70,7 @@ export const replaceChain = (candidateChain: Blockchain) => {
   blockchain = localChain.slice(0, lb).concat(candidateChain)
 }
 
-const getTimestamp = () => parseInt((new Date().getTime() / 1000).toString())
+const getTimestamp = () => Math.floor(new Date().getTime() / 1000)
 
 export const createNewBlock = (txFromMempool: Transaction[]): Block => {
   // ...

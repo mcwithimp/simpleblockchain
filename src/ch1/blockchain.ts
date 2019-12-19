@@ -36,7 +36,7 @@ export const getBlockchain = () => blockchain
 export const getHead = () => blockchain[blockchain.length - 1]
 
 
-const getTimestamp = () => parseInt((new Date().getTime() / 1000).toString())
+const getTimestamp = () => Math.floor(new Date().getTime() / 1000)
 
 export const createNewBlock = (transactions: Transaction[]): Block => {
   const head = getHead()

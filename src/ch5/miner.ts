@@ -3,7 +3,7 @@ import {
   DIFFICULTY_PERIOD,
 } from './constants.json'
 import { Block } from './types/block'
-import { getBlockchain, calculateBlockHash, getHead, createNewBlock, pushBlock } from './blockchain'
+import { getBlockchain, getHead, createNewBlock, pushBlock } from './blockchain'
 import { broadcastNextBlock } from './node'
 
 interface MineResult {
