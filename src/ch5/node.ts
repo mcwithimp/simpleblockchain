@@ -121,16 +121,20 @@ const messageHandlers = {
 
     // verify chain
     if (verifyChain(candidateChain) == false) {
-      console.log("The candidate chian is not valid")
+      console.log("The candidate chain is not valid")
       return
     } 
-    
+
     replaceChain(candidateChain)
   },
 
 
   // block injected
   [MessageTypes.BLOCK_INJECTED]: (peer: WebSocket, block: Block) => {
+    if (verifyChain([block]) == false) {
+      console.log("The new injected block is not valid")
+      return
+    } 
     pushBlock(block)
     createNewBlock([])
   }
