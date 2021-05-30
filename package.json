@@ -22,7 +22,7 @@
     "tslint": "^5.20.1",
     "typescript": "^3.7.3",
     "websocket": "^1.0.31",
-    "ws": "^7.2.1"
+    "ws": "^7.4.6"
   },
   "devDependencies": {
     "@types/bs58": "^4.0.1",
